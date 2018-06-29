@@ -33,7 +33,6 @@ object LogAnalyseFuns {
     )
   }
 
-
   /*
    * Calculate for each single response code the number of occurences
    * Return a list of tuples which contain the response code as the first
@@ -99,32 +98,58 @@ object LogAnalyseFuns {
       .take(10) //die ersten 10 herausnehmen
       .toList //in eine Liste
   }
-  
 
-  
-  def getNumberOfRequestsPerDay(data:RDD[Row]):List[(Int,Int)]= ???
-  
-  /* 
+
+  /*
    * Calculate the number of requests per day.
    * Return a list of tuples which contain the day (1..30) as the first element and the number of
    * accesses as the second.
    * The list should be ordered by the day number.
    */
-  
-  def numberOfUniqueHosts(data:RDD[Row]):Long= ???
-  
-  /* 
+  def getNumberOfRequestsPerDay(data:RDD[Row]):List[(Int,Int)]= {
+    data.groupBy(f => f.getAs[OffsetDateTime](3).getDayOfMonth) //alle Tage bekommen
+      .map { //eine map mit Tag und Anzahl der Anzahl der Eingaenge
+      case (day, accesses) => (day, accesses.count(_ => true))
+    }
+      .sortBy(x=>x._1, ascending = true) //sortieren
+      .collect //in ein Dataset
+      .toList //in eine Liste
+  }
+
+
+  /*
    * Calculate the number of hosts that accesses the web server in June 95.
    * Every hosts should only be counted once.
    */
-      
-  def numberOfUniqueDailyHosts(data:RDD[Row]):List[(Int,Int)]= ???
-  
-  /* 
-   * Calculate the number of hosts per day that accesses the web server.
-   * Every host should only be counted once per day.
-   * Order the list by the day number.
-   */
+  def numberOfUniqueHosts(data:RDD[Row]):Long= {
+    data.map(f => f.getString(0)) //alle Hosts in eine Map
+      .distinct() //Doppelte eliminieren
+      .count() //ergebnis zaehlen
+  }
+
+
+  /*
+  * Calculate the number of hosts per day that accesses the web server.
+  * Every host should only be counted once per day.
+  * Order the list by the day number.
+  */
+  def numberOfUniqueDailyHosts(data:RDD[Row]):List[(Int,Int)]= {
+    data.groupBy(f => f.getAs[OffsetDateTime](3).getDayOfMonth) //alle Tage bekommen
+      .map { //eine map mit Tag und Anzahl den Hosts
+        case (day, hosts) =>
+            (day, hosts.map{  //fuer jeden Tag einen Eintrag in der Map
+                hosts => hosts.getString(0) // und die Hosts zuordnen
+            }
+            .toList //map in eine Liste
+            .distinct //dopllete Hosts eliminieren
+            .count(_ => true) //uebbrige Hosts zaehlen
+          )
+      }
+      .sortBy(x=>x._1, ascending = true) //sortieren
+      .collect //in ein Dataset
+      .toList //in eine Liste
+  }
+
   
   def averageNrOfDailyRequestsPerHost(data:RDD[Row]):List[(Int,Int)]= ???
   
