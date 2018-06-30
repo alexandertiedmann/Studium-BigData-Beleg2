@@ -4,7 +4,7 @@
 		module="beleg2_loganalyse$sources_2.10"
 		revision="0.1"
 		status="integration"
-		publication="20180629135811"
+		publication="20180630115326"
 	/>
 	<configurations>
 		<conf name="compile" visibility="public" description=""/>
