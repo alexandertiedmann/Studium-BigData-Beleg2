@@ -162,7 +162,7 @@ class LogAnalyseFunsTest extends FunSuite with BeforeAndAfterAll{
 
     val avgReqNrPerWeekDay= List()
     val res=LogAnalyseFuns.getAvgRequestsPerWeekDay(access_logs)
-    assert(res===List((34016,"Monday"), (33953,"Tuesday"), (57589,"Wednesday"), (52685,"Thursday"), (58554,"Friday"), (53870,"Saturday"), (59013,"Sunday")))
+     assert(res===List((57589,"Monday"), (52685,"Tuesday"), (58554,"Wednesday"), (53870,"Thursday"), (59013,"Friday"), (34016,"Saturday"), (33953,"Sunday")))
 
    }
     
