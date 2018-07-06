@@ -151,6 +151,10 @@ object LogAnalyseFuns {
   }
 
 
+  /*
+   * Calculate the average number of requests per host for each single day.
+   * Order the list by the day number.
+   */
   def averageNrOfDailyRequestsPerHost(data: RDD[Row]): List[(Int, Int)] = {
     data.groupBy(f => f.getAs[OffsetDateTime](3).getDayOfMonth) // Alle Tage des Monats
       .mapValues { // MapValues betrifft nur Values in einer Map, Keys bleiben so
@@ -164,11 +168,11 @@ object LogAnalyseFuns {
       .toList // zu einer Liste
   }
 
-  /*
-   * Calculate the average number of requests per host for each single day.
-   * Order the list by the day number.
-   */
 
+  /*
+   * Calculate the top 25 hosts that causes error codes (Response Code=404)
+   * Return a set of tuples consisting the hostnames  and the number of requests
+   */
   def top25ErrorCodeResponseHosts(data: RDD[Row]): Set[(String, Int)] = {
     data.groupBy(f => f.getString(0)) // Alle Hosts bekommen
       .mapValues {
@@ -178,11 +182,12 @@ object LogAnalyseFuns {
       .toSet // Jetzt zum Set
   }
 
-  /*
-     * Calculate the top 25 hosts that causes error codes (Response Code=404)
-     * Return a set of tuples consisting the hostnames  and the number of requests
-     */
 
+  /*
+   * Calculate the number of error codes (Response Code=404) per day.
+   * Return a list of tuples that contain the day as the first element and the number as the second.
+   * Order the list by the day number.
+   */
   def responseErrorCodesPerDay(data: RDD[Row]): List[(Int, Int)] = {
     data.groupBy(f => f.getAs[OffsetDateTime](3).getDayOfMonth) // Alle Tage des Monats holen
       .mapValues {
@@ -192,12 +197,13 @@ object LogAnalyseFuns {
       .toList // Zu einer Liste
   }
 
-  /*
-   * Calculate the number of error codes (Response Code=404) per day.
-   * Return a list of tuples that contain the day as the first element and the number as the second. 
-   * Order the list by the day number.
-   */
 
+  /*
+   * Calculate the error response coded for every hour of the day.
+   * Return a list of tuples that contain the hour as the first element (0..23) abd the number of error codes as the second.
+   * Ergebnis soll eine Liste von Tupeln sein, deren erstes Element die Stunde bestimmt (0..23) und
+   * Order the list by the hour-number.
+   */
   def errorResponseCodeByHour(data: RDD[Row]): List[(Int, Int)] = {
     data.groupBy(f => f.getAs[OffsetDateTime](3).getHour) // Die Stunden des Tages holen
       .mapValues {
@@ -207,14 +213,13 @@ object LogAnalyseFuns {
       .toList // Zu einer Liste
   }
 
+
   /*
-   * Calculate the error response coded for every hour of the day.
-   * Return a list of tuples that contain the hour as the first element (0..23) abd the number of error codes as the second.
-   * Ergebnis soll eine Liste von Tupeln sein, deren erstes Element die Stunde bestimmt (0..23) und 
-   * Order the list by the hour-number.
+   * Calculate the number of requests per weekday (Monday, Tuesday,...).
+   * Return a list of tuples that contain the number of requests as the first element and the weekday
+   * (String) as the second.
+   * The elements should have the following order: [Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday].
    */
-
-
   def getAvgRequestsPerWeekDay(data: RDD[Row]): List[(Int, String)] = {
     data.groupBy(f => f.getAs[OffsetDateTime](3).getDayOfWeek.getValue) // Wochentag, hier als Int erstmal
       .mapValues {
@@ -242,10 +247,4 @@ object LogAnalyseFuns {
       .collect() // Dataset
       .toList // zu einer Liste
     }
-  /*
-   * Calculate the number of requests per weekday (Monday, Tuesday,...).
-   * Return a list of tuples that contain the number of requests as the first element and the weekday
-   * (String) as the second.
-   * The elements should have the following order: [Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday].
-   */
 }
