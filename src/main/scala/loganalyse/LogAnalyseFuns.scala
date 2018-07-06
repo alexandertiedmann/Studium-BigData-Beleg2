@@ -56,9 +56,9 @@ object LogAnalyseFuns {
     data.groupBy(f => f.getString(0)) //alle Hosts aus der Row und gruppieren
       .map[(String, Int)] { //eine map mit dem Namen und der Anzahl
       //wenn host name in anderer Zeile dann counten
-      case (host, it: Iterable[Row]) => (host, it.count(_ => true))
+      case (host, it) => (host, it.count(_ => true))
     }
-      .filter { case (_, count) => count > 20 } //nach Hosts mit Count 20 filtern
+      .filter { case (_, count) => count > 10 } //nach Hosts mit Count 10 filtern
       .map { case (host, _) => host } //diese in eine neue map
       .take(20) //aus der map 20 herausnehmen und in ein Array schreiben
       .toList //das array in eine Liste umwandeln
@@ -74,7 +74,7 @@ object LogAnalyseFuns {
     data.groupBy(f => f.getString(5)) //alle angefragten Endpoints
       .map { //eine map mit Name des Endpoints und Anzahl der Anfragen
       case (endpoint, responses) => (endpoint, responses.count(_ => true))
-    }
+      }
       .sortBy(x => x._2, ascending = false) //sortieren
       .take(10) //die ersten 10 herausnehmen
       .toList //in eine Liste
@@ -93,7 +93,7 @@ object LogAnalyseFuns {
       .groupBy(f => f.getString(5)) // mit den Endpoints gruppieren
       .map { //eine map mit Name des Endpoints und den Fehlgeschlagenen Anfragen
       row => (row._1, row._2.count(i => true))
-    }
+      }
       .sortBy(x => x._2, ascending = false) //sortieren
       .take(10) //die ersten 10 herausnehmen
       .toList //in eine Liste
@@ -110,7 +110,7 @@ object LogAnalyseFuns {
     data.groupBy(f => f.getAs[OffsetDateTime](3).getDayOfMonth) //alle Tage bekommen
       .map { //eine map mit Tag und Anzahl der Anzahl der Eingaenge
       case (day, accesses) => (day, accesses.count(_ => true))
-    }
+      }
       .sortBy(x => x._1, ascending = true) //sortieren
       .collect //in ein Dataset
       .toList //in eine Liste
@@ -139,7 +139,7 @@ object LogAnalyseFuns {
       case (day, hosts) =>
         (day, hosts.map { //fuer jeden Tag einen Eintrag in der Map
           hosts => hosts.getString(0) // und die Hosts zuordnen
-        }
+          }
           .toList //map in eine Liste
           .distinct //doppelte Hosts eliminieren
           .count(_ => true) //uebrige Hosts zaehlen
@@ -177,7 +177,8 @@ object LogAnalyseFuns {
     data.groupBy(f => f.getString(0)) // Alle Hosts bekommen
       .mapValues {
         rows => rows.filter(x => x.getInt(7) == 404).size // Zaehle alle Response Codes 404
-      }.sortBy(x => x._2, ascending = false) //  absteigend sortieren, bevor es zum Set wird, Set ist unsortiert
+      }
+      .sortBy(x => x._2, ascending = false) //  absteigend sortieren, bevor es zum Set wird, Set ist unsortiert
       .take(25) // Nimm 25 Elemente raus
       .toSet // Jetzt zum Set
   }
@@ -192,7 +193,8 @@ object LogAnalyseFuns {
     data.groupBy(f => f.getAs[OffsetDateTime](3).getDayOfMonth) // Alle Tage des Monats holen
       .mapValues {
         rows => rows.filter(x => x.getInt(7) == 404).size // Zaehle alle Response Codes 404
-      }.sortBy(x => x._1, ascending = true) // sortieren, diesmal aufsteigend, nach Tageszahl
+      }
+      .sortBy(x => x._1, ascending = true) // sortieren, diesmal aufsteigend, nach Tageszahl
       .collect() // Dataset
       .toList // Zu einer Liste
   }
@@ -208,7 +210,8 @@ object LogAnalyseFuns {
     data.groupBy(f => f.getAs[OffsetDateTime](3).getHour) // Die Stunden des Tages holen
       .mapValues {
         rows => rows.filter(x => x.getInt(7) == 404).size // Zaehle alle Response Codes 404
-      }.sortBy(x => x._1, ascending = true) // sortieren, diesmal aufsteigend, nach Stunde
+      }
+      .sortBy(x => x._1, ascending = true) // sortieren, diesmal aufsteigend, nach Stunde
       .collect() // Dataset
       .toList // Zu einer Liste
   }
@@ -229,8 +232,8 @@ object LogAnalyseFuns {
         // vorkommt, so wird gezaehlt, wie oft Requests DURCHSCHNITTLICH an einem Wochentag stattfinden.
       }
       .map{
-      x => (x._2,x._1) // Tupel umdrehen: Von Wochentag, Requests zu -> Requests,Wochentag
-    }
+        x => (x._2,x._1) // Tupel umdrehen: Von Wochentag, Requests zu -> Requests,Wochentag
+      }
       .sortBy(x=>x._2,ascending = true) // Nach Wochentagen sortieren, Wochentage sind hier immer noch nur Zahlen
       // 1 = Montag, 2 = Dienstag usw.
       .mapValues{ // MapValues betrifft nur die Values, Values sind hier die Wochentage, Anzahl der Requests ist der Key
